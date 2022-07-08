@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect } from "react";
 import {
   collection,
   getDocs,
@@ -15,10 +15,13 @@ import { ToastContainer, toast } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
 
+import "../Showdata/user.css"
+
 export default function Users() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dataToBeEdit, setDataToBeEdit] = useState({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleChange = (e) => {
     setDataToBeEdit({ ...dataToBeEdit, [e.target.name]: e.target.value });
@@ -49,6 +52,7 @@ export default function Users() {
   };
 
   const handleUpdate = async (docu) => {
+    setIsUpdating(true);
     await setDoc(doc(firestore, "users", docu.id), docu, { merge: true });
 
     console.log("document updated");
@@ -60,6 +64,7 @@ export default function Users() {
         return oldUser;
       }
     });
+    setIsUpdating(false)
     toast.success("Users Updated", {
       position: "top-center",
       autoClose: 4000,
@@ -70,17 +75,20 @@ export default function Users() {
       progress: undefined,
     });
     setDocuments(newUsers);
-
     setDataToBeEdit({});
+    
   };
 
   const handleDelete = async (docu) => {
+    setIsUpdating(true);
+
     await deleteDoc(doc(firestore, "users", docu.id));
     console.log("document deleted");
 
     let newDocument = documents.filter((newDoc) => {
       return docu.id !== newDoc.id;
     });
+    setIsUpdating(false)
     toast.error("User Is Delete", {
       position: "top-center",
       autoClose: 3000,
@@ -95,20 +103,24 @@ export default function Users() {
 
   return (
     <>
-      <div className="container text-center  mt-5">
+      <div className="container text-center " style={{ marginTop: "160px" }}>
         {loading ? (
-          <div className="spinner-border" role="status">
-            <span className="sr-only"></span>
+          <div>
+            <span
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            {/* <span class="sr-only">Updating</span> */}
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="table">
-              <thead className="table-info">
+            <table className="table mt-5">
+              <thead className="table-info ">
                 <tr>
                   <th scope="col">Name</th>
                   <th scope="col">Number</th>
-                  <th scope="col">Update</th>
-                  <th scope="col">Delete</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -119,7 +131,7 @@ export default function Users() {
                     <td>
                       <button
                         type="button"
-                        className="btn btn-success btn-sm"
+                        className="btn btn-success btn-sm me-1  "
                         data-bs-toggle="modal"
                         data-bs-target="#exampleModal"
                         onClick={() => {
@@ -128,8 +140,6 @@ export default function Users() {
                       >
                         Update
                       </button>
-                    </td>
-                    <td>
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => {
@@ -212,6 +222,13 @@ export default function Users() {
         </div>
       </div>
       <ToastContainer />
+      {isUpdating ? (
+        <div className="fullScreenLoader">
+          <div className="spinner-border"></div>
+        </div>
+      ) : (
+        <></>
+      )}
     </>
   );
 }

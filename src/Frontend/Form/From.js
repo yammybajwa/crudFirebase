@@ -6,7 +6,13 @@ import { firestore } from "../../config/firebase";
 
 import { ToastContainer, toast } from "react-toastify";
 
+import "../../../node_modules/bootstrap/dist/js/bootstrap.bundle";
+
 import "react-toastify/dist/ReactToastify.css";
+
+import "../Form/Form.css";
+
+
 
 export default function From() {
   const [name, setName] = useState("");
@@ -14,6 +20,8 @@ export default function From() {
   const [number, setNumber] = useState("");
 
   const [array, setArray] = useState([]);
+
+  const [loading, setLoading] = useState(true);
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
@@ -24,10 +32,12 @@ export default function From() {
     };
 
     setArray([...array, formData]);
+    setLoading(false);
 
     try {
       const docRef = await addDoc(collection(firestore, "users"), formData);
       console.log("Document written with ID: ", docRef.id);
+
       toast.success("User Has Been Added", {
         position: "top-center",
         autoClose: 3000,
@@ -39,6 +49,7 @@ export default function From() {
       });
       setName("");
       setNumber("");
+      setLoading(true);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -46,10 +57,10 @@ export default function From() {
 
   return (
     <>
-      <div className="d-flex align-items-center justify-content-center my-5">
+      <div className="d-flex align-items-center justify-content-center " style={{height:"calc(100vh - 96px)"}}>
         <div className="container">
           <div className="row">
-            <div className="col-sm-12 col-md-8 col-lg-4  mx-auto">
+            <div className="col-sm-12 col-md-8 col-lg-4 mx-auto">
               <div className="card p-3">
                 <h5 className="text-center ">ADD USERS</h5>
                 <hr />
@@ -73,9 +84,20 @@ export default function From() {
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
                   />
-                  <button className="btn btn-success w-100 mt-2">
-                    ADD USER
-                  </button>
+                  {!loading ? (
+                    <button className="btn btn-success w-100 mt-2 " disabled>
+                      <div
+                        className="spinner-border text-center "
+                        role="status"
+                      >
+                        <span className="sr-only"></span>
+                      </div>
+                    </button>
+                  ) : (
+                    <button className="btn btn-success w-100 mt-2">
+                      ADD USER
+                    </button>
+                  )}
                 </form>
               </div>
             </div>
